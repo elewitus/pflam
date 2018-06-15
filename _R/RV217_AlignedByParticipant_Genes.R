@@ -9,7 +9,7 @@ cols<-brewer.pal(9,"Reds")
 col <- colorRampPalette(cols)(n = 20)
 
 setwd('~/Desktop/_mtree/RV217/AlignedByParticipant/_genes')
-list.files(path="~/Desktop/_mtree/RV217/AlignedByParticipant/_genes",pattern="*")->folders
+list.files(path="~/Desktop/_mtree/RV217/AlignedByParticipant/_genes",pattern="")->folders
 files<-lapply(1:length(folders),function(f){
 	list.files(path=paste("~/Desktop/_mtree/RV217/AlignedByParticipant/_genes/",folders[f],sep=""),pattern="*.treefile")
 	})
@@ -20,7 +20,7 @@ trees<-lapply(1:length(files),function(t){
 	})
 #genetrees<-c(trees[[1]],trees[[2]],trees[[3]],trees[[4]],trees[[5]],trees[[6]],trees[[7]],trees[[8]],trees[[9]])
 ###########standard_spectral_profiles#####################standard_spectral_profiles#####################standard_spectral_profiles#####################standard_spectral_profiles#####################
-
+c()->all_eigen
 for(u in 1:length(trees)){	
 	trAll <- lapply(trees[[u]],dist.nodes)	 
 	allMats <- lapply(trAll,data.matrix)
@@ -74,6 +74,7 @@ for(q in 1:length(d)){
 	max(x[[q]])->pe[[q]]
 	log(max(dsc[[q]]))->height[[q]]
 	log(skewness(dsc[[q]]))->skew[[q]]
+	Ntip(genetrees[[q]])->tips[[q]]
 	}
 	tab<-cbind(pe,height,skew,rows, filenames,pamk.best[[1]]$clustering)
 		colnames(tab)<-c("pe","height","skew","gene","participant","cluster")
@@ -84,16 +85,13 @@ for(q in 1:length(d)){
 colors<-brewer.pal(9,"Paired")
 tab<-read.table('~/Desktop/_mtree/RV217/AlignedByParticipant/_genes/RV217_AlignedByParticipant_genes_MGLtable.txt',header=T,row.names=1)
 
-pdf('RV217_AlignedByParticipant_phylospace.pdf')
-#par(mfrow=c(1,2))
-#plot(pam(virus_JSD,pamk.best$nc))
-sactter.grid(tab$pe,tab$height,tab$skew,angle=30,xlab="PE",ylab="height",zlab="skew",color=colors[as.numeric(tab$gene)],pch=20)
-dev.off()			
+sactter.grid(tab$pe,tab$height,tab$skew,angle=30,xlab="PE",ylab="height",zlab="skew",pch=20)
+			
 
 tabbygene<-lapply(1:length(trees),function(tbg){
 	subset(tab,tab$gene==paste(folders[tbg]))
 	})
-
+pdf('RV217_AlignedByParticipant_genes_phylospace.pdf',10,8)
 par(mfcol=c(3,2),mar=c(4,4,1,1))
 	boxplot(tabbygene[[1]]$pe,tabbygene[[2]]$pe,tabbygene[[3]]$pe,tabbygene[[4]]$pe,tabbygene[[5]]$pe,tabbygene[[6]]$pe,tabbygene[[7]]$pe,tabbygene[[8]]$pe,tabbygene[[9]]$pe,outline=F,col=colors,ann=F,ylab="PE")
 	boxplot(tabbygene[[1]]$skew,tabbygene[[2]]$skew,tabbygene[[3]]$skew,tabbygene[[4]]$skew,tabbygene[[5]]$skew,tabbygene[[6]]$skew,tabbygene[[7]]$skew,tabbygene[[8]]$skew,tabbygene[[9]]$skew,outline=F,col=colors,ann=F,ylab="skewness")
@@ -119,7 +117,7 @@ for(o in 1:length(files)){
 	}
 	axis(1)
 	axis(2)		
-
+dev.off()
 
 bigskew<-lapply(1:length(tabbygene),function(r){
 	subset(tabbygene[[r]],tabbygene[[r]]$skew>3.5)$participant
@@ -128,9 +126,23 @@ bigskew<-lapply(1:length(tabbygene),function(r){
 c()->overlap
 overlaps<-sapply(1:length(bigskew),function(a){
 overlap[[a]]<-sapply(1:length(bigskew),function(b){
-	length(which(bigskew[[a]]%in%bigskew[[b]]))/length(bigskew[[a]])
+	length(intersect(bigskew[[a]],bigskew[[b]]))/length(bigskew[[b]])
 	})
-	})
+})
+
+overlaps<-lapply(1:length(bigskew),function(a){
+overlap<-lapply(1:length(bigskew),function(b){
+	intersect(bigskew[[a]],bigskew[[b]])})
+})
+
+Reduce(intersect, list(bigskew[[7]],bigskew[[8]],bigskew[[8]]))->vargene
+
+lapply(1:6,function(d){
+	print(d)
+	setdiff(vargene,bigskew[[d]])->vargene
+})
+
+
 
 corrgram(overlaps,labels=folders,lower.panel=panel.shade,upper.panel=NULL)
 
