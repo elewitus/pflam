@@ -8,10 +8,18 @@ source('~/Desktop/_mtree/_R/_JSD.R')
 cols<-brewer.pal(9,"Reds")
 col <- colorRampPalette(cols)(n = 20)
 
-setwd('~/Desktop/_mtree/RV217/AlignedByParticipant/Genome')
-list.files(path="~/Desktop/_mtree/RV217/AlignedByParticipant/Genome",pattern="*.treefile")->files
-files<-files[-c(7,43)]
+#setwd('~/Desktop/_mtree/RV217/AlignedByParticipant/LongitudinalEnv')
+#list.files(path="~/Desktop/_mtree/RV217/AlignedByParticipant/LongitudinalEnv",pattern="*.treefile")->longfiles
+#longtrees<-lapply(longfiles,read.tree)
+
+setwd('~/Desktop/_mtree/RV217/AlignedByParticipant/Genome/_iqtrees')
+list.files(path="~/Desktop/_mtree/RV217/AlignedByParticipant/Genome/_iqtrees",pattern="*.treefile")->files
+#remove 20263 (7),40646 (43) - half-genomes
+#remove 30156 (20),30196 (22) - outliers
+#remove tempf (44)- ?
+files<-files[-c(7,43,44)]
 trees<-lapply(files,read.tree)
+
 
 ###########standard_spectral_profiles#####################standard_spectral_profiles#####################standard_spectral_profiles#####################standard_spectral_profiles#####################
 	trAll <- lapply(trees,dist.nodes)	 
@@ -34,7 +42,7 @@ for(i in 1:length(all_eigen))
 ##Convolve with gaussian kernel, f(x)/integrate{f(y)}
 list() -> d; list() -> dint; list() -> dsc
 for(i in 1:length(x)){
-	dens(log(x[[i]])) -> d[[i]]
+	log(dens(x[[i]])) -> d[[i]]
 	integr(d[[i]]$x,d[[i]]$y) -> dint[[i]]
 	(d[[i]]$y/dint[[i]]) -> dsc[[i]]
 	}  
@@ -67,10 +75,29 @@ for(q in 1:length(d)){
 ###########plotting_spectral_density_profile#####################plotting_spectral_density_profile#####################plotting_spectral_density_profile#####################plotting_spectral_density_profile#####################	##########plotting_spectral_density_profile##############################
 
 tab<-read.table('~/Desktop/_mtree/RV217/AlignedByParticipant/Genome/RV217_AlignedByParticipant_Genome_MGLtable.txt',header=T,row.names=1)
+#remove 30156,30196 as outliers
+tab<-tab[-c(19,21),]
 
 pdf('RV217_AlignedByParticipant_phylospace.pdf',10,5)
 par(mfrow=c(1,3))
 plot(pam(virus_JSD,pamk.best$nc))
-sactter.grid(tab$pe,tab$height,tab$skew,angle=30,xlab="PE",ylab="height",zlab="skew",color=1,pch=as.numeric(tab$multifounder))
+sactter.grid(tab$pe,tab$height,tab$skew,angle=30,xlab="PE",ylab="height",zlab="skew",pch=as.numeric(tab$cluster),cex.symbols=3,color=as.numeric(tab$multifounder))
+legend("topleft",c('single_founder','multi_founder'),lty=1,col=c(1,2),bty="n")
 dev.off()			
+
+#SPVL by cluster
+tab[c(1:24),]->f
+tab[-c(1:24),]->m
+boxplot(f$pe,m$pe,NA,f$skew,m$skew,NA,f$height,m$height)
+
+#SPVL by multifounder
+subset(tab,tab$multifounder=='y')->mfy
+subset(tab,tab$multifounder=='n')->mfn
+boxplot(mfy$maxSPVL,mfn$maxSPVL,NA,mfy$minSPVL,mfn$minSPVL,NA, mfn$medSPVL, mfy$medSPVL)
+
+###########set_point_viral_load_by_participant#####################set_point_viral_load_by_participant#####################set_point_viral_load_by_participant#####################set_point_viral_load_by_participant#####################	##########set_point_viral_load_by_participant##############################
+
+tab<-read.table('~/Desktop/_mtree/RV217/AlignedByParticipant/Genome/RV217_AlignedByParticipant_Genome_MGLtable.txt',header=T,row.names=1)
+
+summary(lm(mfn$pe~ mfn$spvl))
 
