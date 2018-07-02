@@ -140,3 +140,21 @@ gtr_basefreq2[[o]]<-lapply(1:length(genetrees),function(l){
 		seqsim(genetrees[[l]],length=length[l],model='gtr',basefreq=basefreq[[2]],option=options[o])	
 	})	
 
+##
+	count<-1
+	trss<-list()
+	for(i in 1:length(trs)){
+	if(is.phylo(trs[[i]]) == TRUE){
+		trs[[i]]->trss[[count]]
+		count <- count + 1
+	}
+}
+
+	count<-1
+	list()->tr
+	for(i in 1:length(trss)){
+		if(length(trss[[i]]$tip.label) > 10){
+			trss[[i]]->tr[[count]]
+			count<-count+1
+		}
+	}
