@@ -1,4 +1,10 @@
-matrix(rexp(10000, rate=.1), ncol=10)->a
+#mat=n x m matrix with column names
+#no NAs (convert to 0?)
+#unsupervised clustering for range of 1:Y clusters 
+#using expectation maximization on different gaussian mixture models
+#outputs plots of expression through time for each cluster and cohesion coefficient for each gene
+#outputs BIC scores for clusters 1:Y (under best fit model)
+#outputs dataframes of clusters
 
 brassica<-function(mat,Y){
 	#get CI function
@@ -10,7 +16,7 @@ brassica<-function(mat,Y){
 	require(gtools)
 	require(cluster)
 	require(mclust)
-	#get BIC scores for 1:Y clusters under spherical and diagonal models
+	#get BIC scores for 1:Y clusters under spherical,ellipsoidal,diagonal models
 	Mclust(mat,G=1:Y)->j
 	print(paste("best model fit",j[[3]],"with",j[[6]],"clusters"))
 	#assign genes to clusters and calculate silhouette widths for each gene
