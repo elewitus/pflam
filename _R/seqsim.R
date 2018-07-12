@@ -1,4 +1,7 @@
-seqsim<-function(tree,length,basefreq,alpha,beta,model=c(''),option=c(''),superinfect=F){
+seqsim<-function(tree,length,basefreq,alpha,beta,model=c(''),option=c(''),superinfect=F,plot=F){
+	options(warn=-1)
+	tree$tip.label<-1:length(tree$tip.label)
+
 	##JC69
 	##Equal substitution rates and equal base frequencies (Jukes and Cantor, 1969)
 	if(model=='JC69'){
@@ -53,5 +56,13 @@ seqsim<-function(tree,length,basefreq,alpha,beta,model=c(''),option=c(''),superi
 	if(superinfect==F){
 		alignment<-Simulate(sim)
 			}
+	if(plot==T){
+		pdf('seqsim.pdf')
+		par(mfrow=c(1,2))
+		plot(mod)
+		plot(sim,num.pages=1)
+		dev.off()
+	}		
+	options(warn=0)		
 	return(alignment)	
 } 	
