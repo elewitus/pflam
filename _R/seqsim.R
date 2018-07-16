@@ -1,3 +1,15 @@
+codsim<-function(tree,length,kappa){
+	p<-GY94()
+	p$kappa<-kappa
+	codon.freqs <- abs(rnorm(61, mean = 10, sd = 3))
+	codon.freqs <- codon.freqs/sum(codon.freqs)
+	p$equDist <- codon.freqs
+	s<-CodonSequence(length=length,processes=list(list(p)))
+	sampleStates(s)
+	sim <- PhyloSim(root.seq = s,phylo=tree)
+	Simulate(sim)	
+}
+
 seqsim<-function(tree,length,basefreq,alpha,beta,model=c(''),option=c(''),superinfect=F,plot=F){
 	options(warn=-1)
 	tree$tip.label<-1:length(tree$tip.label)
