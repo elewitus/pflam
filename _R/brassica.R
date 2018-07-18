@@ -45,7 +45,7 @@ brassica<-function(mat,Y){
 			ylim=c(range(med[[o]])),ann=F,axes=F)
 			polygon(c(1:dim(mat)[2],rev(1:dim(mat)[2])),
 					c(med[[o]][3,],rev(med[[o]][2,])),
-					col="light grey")
+					col=rgb(0.1,0.5,0.5,0.3))
 			axis(1,at=1:dim(mat)[2],labels=colnames(mat))	
 			axis(2,las=2)
 			mtext('reads',2,2)	
