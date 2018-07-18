@@ -1,11 +1,14 @@
-codsim<-function(tree,length,kappa){
+codsim<-function(tree,length,titv,dnds_min,dnds_max,plot=T){
 	p<-GY94()
-	p$kappa<-kappa
+	p$kappa<-titv
 	codon.freqs <- abs(rnorm(61, mean = 10, sd = 3))
 	codon.freqs <- codon.freqs/sum(codon.freqs)
 	p$equDist <- codon.freqs
 	s<-CodonSequence(length=length,processes=list(list(p)))
 	sampleStates(s)
+	omegaVarM3(s,p,omegas=c(runif(4,dnds_min,dnds_max)),probs=rep(0.25,4))
+	if(plot==T){
+		omegaHist(s,p)}
 	sim <- PhyloSim(root.seq = s,phylo=tree)
 	Simulate(sim)	
 }
