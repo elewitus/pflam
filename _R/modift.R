@@ -4,7 +4,8 @@ modfit<-function(times,gexp,plot=T){
 	#estimate linear regression model - y=a+bx 
 	lin<-lm(gexp~times)
 	#estimate non-linear regression model y = a+b^x
-	nonlin<-nls(gexp~a*exp(b*times),start=list(a=1e-5,b=1e-4),control=nls.control(maxiter=1e3))
+	nonlin<-nls(gexp~a*exp(b*times),start=list(a=0.1,b=0.01),
+		control=nls.control(maxiter=1e3,minFactor=1e-20))
 	
 	#compute rho for each model fit
 	lincor<-cor(gexp,predict(lin))
@@ -14,7 +15,7 @@ modfit<-function(times,gexp,plot=T){
 	col<-c('slope','rho','p')
 	lintab<-c(summary(lin)$coefficients[2,1],lincor,summary(lin)$coefficients[2,4])
 	names(lintab)<-col
-	nonlintab<-c(summary(nonlin)$coefficients[2,1],nonlincor,summary(nonlin)$coefficients[2,1])
+	nonlintab<-c(summary(nonlin)$coefficients[2,1],nonlincor,summary(nonlin)$coefficients[2,4])
 	names(nonlintab)<-col
 	
 		res<-list(linear_fit=lintab,nonlinear_fit=nonlintab,lin,nonlin)
