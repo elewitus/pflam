@@ -9,13 +9,21 @@ source('~/Desktop/_mtree/_R/_JSD.R', chdir = TRUE)
 
 trfiles<-list.files(path="~/Desktop/_mtree/RV217/AlignedByParticipant/_longitudinal",pattern="*.treefile")
 	trfiles<-trfiles[-4]#remove 20263, miracle outlier
-alfiles<-list.files(path="~/Desktop/_mtree/RV217/AlignedByParticipant/_longitudinal",pattern="*.fas.txt.out")
-	alfiles<-alfiles[seq(1,254,9)]#reduce to only msa
-	alfiles<-alfiles[-4]#remove 20263, miracle outlier
+
 	
 setwd('~/Desktop/_mtree/RV217/AlignedByParticipant/_longitudinal')
 tree<-lapply(trfiles,read.tree)
+
+
+alfiles<-list.files(path="~/Desktop/_mtree/RV217/AlignedByParticipant/_longitudinal",pattern="*.fasta")
+	alfiles<-alfiles[seq(1,173,6)]#reduce to only msa
+	#alfiles<-alfiles[-4]#remove 20263, miracle outlier
 align<-lapply(alfiles,read.alignment,format='fasta')
+sel<-sapply(c(1:4,6:18,20:28),function(a){
+	   	print(a) 
+	   	kaks(align[[a]])->s
+	   	median(s$ka/s$ks,na.rm=T)
+	   	 })
 
 gets<-function(phy){
 eigen(
@@ -23,27 +31,30 @@ eigen(
 		graph.adjacency(
 			data.matrix(dist.nodes(phy)),
 			weighted=T),
-		normalized=F),
+		normalized=T),
 	only.values=T)$values->x
-	subset(x,x>0)->e
+	subset(x,x>1)->e
 	return(e)
 }
 e<-lapply(tree,gets)
 
 
 c()->d;c()->dsc;c()->pe;c()->skew;c()->height
-c()->gaps;c()->gapMat;c()->modalities;c()->gapMatCol;c()->eigenGap
+c()->gaps;c()->gapMat;c()->modalities;c()->gapMatCol;c()->eigenGap;c()->dnds;c()->rate
 for(n in 1:length(e)){
+	print(n)
 	dens(log(e[[n]]))->d[[n]]
 	d[[n]]$y/integr(d[[n]]$x,d[[n]]$y)->dsc[[n]]
 	max(e[[n]])->pe[[n]]
-	skewness(dsc[[n]])->skew[[n]]
+	skewness(d[[n]]$x)->skew[[n]]
 	max(dsc[[n]])->height[[n]]
-	abs(diff(e[[n]]))->gaps[[n]]
-	as.matrix(gaps[[n]])->gapMat[[n]]
-	modalities[[n]] <- c(1:length(gapMat[[n]]))
-    gapMatCol[[n]] <- cbind(modalities[[n]], gapMat[[n]])
-    gapMatCol[[n]][order(gapMatCol[[n]][,2],decreasing=T),][1,1]->eigenGap[[n]]
+	#abs(diff(e[[n]]))->gaps[[n]]
+	#as.matrix(gaps[[n]])->gapMat[[n]]
+	#modalities[[n]] <- c(1:length(gapMat[[n]]))
+    #gapMatCol[[n]] <- cbind(modalities[[n]], gapMat[[n]])
+    #gapMatCol[[n]][order(gapMatCol[[n]][,2],decreasing=T),][1,1]->eigenGap[[n]]
+	#kaks(align[[n]])->dnds[[n]]
+	#median(dnds[[n]]$ka/dnds[[n]]$ks,na.rm=T)->rate[[n]]
 	}
 
 Ds<-c()
@@ -56,14 +67,7 @@ for(i in 1:length(e)){
 			symm=T,dendrogram="column",
 			cexRow=0.5,cexCol=0.5,col=brewer.pal(9,'Blues'))
 
-	sel<-sapply(1:length(align),function(a){
-	   	print(a) 
-	   	kaks(align[[a]])->s
-	   	if(length(s)>1){
-	   	median(s$ka/s$ks,na.rm=T)
-	   	}
-	   	else(0)
-	   	})
+	
 
 
 tab<-cbind(pe,skew,height,clus[[1]]$clustering,tips)
@@ -72,7 +76,7 @@ write.csv(tabs,file="RV217neutralizer_table.csv")
 
 
 
-#####
+####################STANDARD########################################STANDARD########################################STANDARD########################################STANDARD########################################STANDARD########################################STANDARD#################################
 tab<-read.csv("RV217neutralizer_table.csv",header=T,row.names=1)
 
 pdf('RV217longitudinal_phylospace.pdf')
@@ -110,7 +114,7 @@ dev.off()
 subset(tab,tab$cluster==1)->c1
 subset(tab,tab$cluster==2)->c2
 pdf('RV217Neutralizer_clusterboxplot.pdf')
-boxplot(log(c1$pe),log(c2$pe),NA,c1$skew,c2$skew,NA,c1$height,c2$height,col=brewer.pal(9,"Blues")[c(1,9,2)],ann=F,axes=F)
+boxplot(log(c1$pe),log(c2$pe),NA,c1$skew,c2$skew,NA,c1$height,c2$height,NA,c1$kaks,c2$kaks,col=brewer.pal(9,"Blues")[c(1,9,2)],ann=F,axes=F)
 	axis(1,at=seq(1.5,10.5,3),labels=c("PE","skew","height","dN/dS"))
 	axis(2,las=2)
 dev.off()	
