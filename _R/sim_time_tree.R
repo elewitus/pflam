@@ -1,8 +1,8 @@
-	require(phytools)
+require(phytools)
 	require(geiger)
 	require(TreeSim)
 
-sim_sample_tree<-function(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,scale.time,ultrametric=F,rescale=F){
+sim_sample_tree<-function(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,root,ultrametric=F,rescale=F){
 	#simulate three ultrametric trees 
 	if(ultrametric==T){
 		trees<-lapply(1:samples,function(s){
@@ -31,7 +31,59 @@ sim_sample_tree<-function(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,scal
 	return(tr2)	
 }		
 
+sim_sample_tree_root<-function(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,root,ultrametric=F,rescale=F){
+	#simulate three ultrametric trees 
+	if(ultrametric==T){
+		trees<-lapply(1:samples,function(s){
+			sim.bd.taxa(tips[s],1,f.lambs[[s]](time[s],lamb_pars[[s]]),f.mus[[s]](time[s],mu_pars[[s]]),complete=F)[[1]]->tr
+			tr$root.edge<-root[s]
+			tr
+		})
+	}
+	#simulate three non-ultrametric trees
+	else{
+		tree<-lapply(1:samples,function(s){
+			sim.bd.taxa(tips[s],1,f.lambs[[s]](time[s],lamb_pars[[s]]),f.mus[[s]](time[s],mu_pars[[s]]),complete=T)[[1]]->tr
+			tr$root.edge<-root[s]
+			tr
+		})
+		trees<-lapply(1:samples,function(t){
+			drop.tip(tree[[t]],sample(abs(tips[t]-1-length(tree[[t]]$tip.label))))
+		})
+	}
+	if(rescale==T){
+	#scale trees
+	trees<-lapply(1:samples,function(t){
+		trees[[t]]$edge.length<-trees[[t]]$edge.length/max(nodeHeights(trees[[t]])[,2])*time[t]
+		trees[[t]]
+	})
+	}
+	#graph trees sequentially to terminal edges
+	bind.tree(trees[[1]],trees[[2]],where=max(trees[[1]]$edge))->tr1
+	bind.tree(tr1,trees[[3]],where=max(trees[[2]]$edge))->tr2
+	return(tr2)	
+}		
 
+
+gete<-function(phy){
+abs(eigen(
+	graph.laplacian(
+		graph.adjacency(
+			data.matrix(dist.nodes(phy)),
+			weighted=T),
+		normalized=F),
+	only.values=T)$values)
+}
+
+getn<-function(phy){
+abs(eigen(
+	graph.laplacian(
+		graph.adjacency(
+			data.matrix(dist.nodes(phy)),
+			weighted=T),
+		normalized=T),
+	only.values=T)$values)
+}
 
 sim_sample_tree2<-function(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,ultrametric=F){
 	require(phytools)
