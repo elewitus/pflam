@@ -2,11 +2,19 @@ require(phytools)
 	require(geiger)
 	require(TreeSim)
 
-sim_sample_tree<-function(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,root,ultrametric=F,rescale=F){
+sim_sample_tree<-function(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,root,frac,ultrametric=F,rescale=F){
 	#simulate three ultrametric trees 
 	if(ultrametric==T){
-		trees<-lapply(1:samples,function(s){
-			sim.bd.taxa(tips[s],1,f.lambs[[s]](time[s],lamb_pars[[s]]),f.mus[[s]](time[s],mu_pars[[s]]),complete=F)[[1]]
+		tree<-lapply(1:samples,function(s){
+			tess.sim.age(1,time[s],f.lambs[[s]](time[s],lamb_pars[[s]]),f.mus[[s]](time[s],mu_pars[[s]])[[1]],samplingProbability=frac[s],maxTaxa=120)[[1]]#->tr
+			#tr$root.edge<-root[s]
+			#tr
+			#tess.sim.age(1,time[s],f.lambs[[s]](time[s],lamb_pars[[s]]),f.mus[[s]](time[s],mu_pars[[s]]))[[1]]
+		})
+		trees<-lapply(1:samples,function(t){
+			if(length(tree[[t]]$tip.label)>tips[t]){
+			drop.tip(tree[[t]],sample(abs(tips[t]-1-length(tree[[t]]$tip.label))))}
+			else{tree[[t]]}
 		})
 	}
 	#simulate three non-ultrametric trees
@@ -222,4 +230,4 @@ sim_time_tree<-function(f.lamb,f.mu,lamb_par,mu_par,time.stop=tot_time,return.ex
 #time<-c(10,10,10)
 #tips=10
 
-#sim_sample_tree(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,ultrametric=F)->tte			
+#sim_sample_tree(f.lambs,f.mus,lamb_pars,mu_pars,samples,time,tips,ultrametric=F)->tte					
