@@ -1,9 +1,9 @@
 library(igraph)
 library(ape)
 
-founder_rank_all<-function(phylos,plot=F){
-	#define function for finding heterogeneity rank for each tree
-
+founder_rank_all<-function(phylos,sd=T,plot=F){
+	
+	#compute spectral density profile summary statistics
 	gete<-function(phy){
 		abs(eigen(
 			graph.laplacian(
@@ -20,15 +20,24 @@ founder_rank_all<-function(phylos,plot=F){
 		d[[n]]$y/integr(d[[n]]$x,d[[n]]$y)->dsc[[n]]
 		max(e[[n]])->pe[[n]]
 		}
-	#distance from median
-	founder_rank<-function(phylos,test){
-	med<-function(x){
-		c(median(log(x))-0.5*sd(log(x)),median(log(x))+0.5*sd(log(x)))}
-	if(log(pe[[test]])<med(pe)[1]){return('homogeneous')}	
-	if(log(pe[[test]])>med(pe)[2]){return('heterogeneous')}	
-	else{return('medial')}
-	}
 	
+	#define function for finding heterogeneity rank for each tree
+	founder_rank<-function(phylos,test){
+	#compute median+-0.5*sigma^2
+	med<-function(x){
+		c(median(log(x))-0.5*sd(log(x)),median(log(x))+0.5*sd(log(x)),median(log(x)))}
+	
+	#draw the threshold at +-0.5*sd or at the median
+	if(sd==T){
+		if(log(pe[[test]])<med(pe)[1]){return('homogeneous')}	
+		if(log(pe[[test]])>med(pe)[2]){return('heterogeneous')}	
+		else{return('medial')}
+	}
+	else{
+		if(log(pe[[test]])<med(pe)[3]){return('homogeneous')}	
+		if(log(pe[[test]])>med(pe)[3]){return('heterogeneous')}	
+		}
+	}
 	#create table of founder ranks for all trees in set
 	ranks<-sapply(1:length(phylos),function(r){
 		founder_rank(phylos,r)
