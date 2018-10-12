@@ -13,7 +13,7 @@ founder_rank_all<-function(phylos,sd=F,plot=F){
 		normalized=F),
 	only.values=T)$values)
 	}
-	e<-lapply(trees,gete)
+	e<-lapply(phylos,gete)
 	c()->d;c()->dsc;c()->pe
 	for(n in 1:length(e)){
 		dens(e[[n]])->d[[n]]
@@ -44,8 +44,8 @@ founder_rank_all<-function(phylos,sd=F,plot=F){
 	})
 	#return trees by PE rank and founder classification
 	tab_pe<-as.data.frame(cbind(1:length(phylos),pe))
-	tab<-as.data.frame(cbind(order(tab_pe[,2],tab_pe[,1]),ranks[order(tab_pe[,2],tab_pe[,1])]))
-	colnames(tab)<-c('rank','founder_type')
+	tab<-as.data.frame(cbind(as.numeric(order(tab_pe[,2],tab_pe[,1])),ranks[order(tab_pe[,2],tab_pe[,1])]))
+	colnames(tab)<-c('tree','founder_type')
 	
 	#plot PE (shifted by min) in order of tree input, demarcating +- 1/2 standard deviations from the median
 	if(plot==T){
