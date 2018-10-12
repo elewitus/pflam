@@ -1,7 +1,7 @@
 library(igraph)
 library(ape)
 
-founder_rank_all<-function(phylos,sd=T,plot=F){
+founder_rank_all<-function(phylos,sd=F,plot=F){
 	
 	#compute spectral density profile summary statistics
 	gete<-function(phy){
@@ -13,14 +13,14 @@ founder_rank_all<-function(phylos,sd=T,plot=F){
 		normalized=F),
 	only.values=T)$values)
 	}
-	e<-lapply(phylos,gete)
+	e<-lapply(trees,gete)
 	c()->d;c()->dsc;c()->pe
 	for(n in 1:length(e)){
 		dens(e[[n]])->d[[n]]
 		d[[n]]$y/integr(d[[n]]$x,d[[n]]$y)->dsc[[n]]
 		max(e[[n]])->pe[[n]]
 		}
-	
+		
 	#define function for finding heterogeneity rank for each tree
 	founder_rank<-function(phylos,test){
 	#compute median+-0.5*sigma^2
@@ -52,7 +52,7 @@ founder_rank_all<-function(phylos,sd=T,plot=F){
 		abs(min(log(pe)))->shift
 		barplot(sort((log(pe)+shift)),col=colors(1)[runif(1,30,502)],
 			xlab='phylogeny',ylab=expression(lambda ~'* (shifted)'),
-			names=tab$rank,cex=0.75)
+			names=tab$rank,cex.names=0.75)
 		abline(h=median(log(pe))-0.5*sd(log(pe))+shift,lty=3)
 		abline(h=median(log(pe))+0.5*sd(log(pe))+shift,lty=2)	
 		return(tab)
