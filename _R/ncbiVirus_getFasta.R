@@ -17,15 +17,3 @@ lapply(1:dim(vf)[1],function(o){
 
 #rename
 #for f in *\ *; do mv "$f" "${f// /_}"; done
-
-##align with mafft
-for fasta_file in $(ls *.fasta)
-do
-mafft --retree 1 $fasta_file > $fasta_file.out
-done
-
-##build trees
-for msa_file in $(ls *.out)
-do
-./iqtree -s $msa_file
-done
